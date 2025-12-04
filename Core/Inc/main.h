@@ -65,14 +65,41 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
+/* ============================================================================
+ * SIM Card HAL - Inline macros for timing-critical operations
+ * ============================================================================ */
 
-// TODO: Add VDD_SIM power enable pin from your schematic
-// Example (uncomment and modify based on your hardware):
-// #define VDD_SIM_EN_Pin GPIO_PIN_X
-// #define VDD_SIM_EN_GPIO_Port GPIOX
-//
-// Then in SIM_Init(), add:
-// HAL_GPIO_WritePin(VDD_SIM_EN_GPIO_Port, VDD_SIM_EN_Pin, GPIO_PIN_SET);
+// DWT (Data Watchpoint and Trace) addresses for cycle-accurate delays
+#define DWT_CONTROL_REG ((volatile uint32_t *)0xE0001000)
+#define DWT_CYCCNT_REG  ((volatile uint32_t *)0xE0001004)
+
+// Inline delay using DWT cycle counter
+static inline void SIM_HAL_DelayUs(uint32_t us) {
+    uint32_t cycles = (SystemCoreClock / 1000000) * us;
+    uint32_t start = *DWT_CYCCNT_REG;
+    while ((*DWT_CYCCNT_REG - start) < cycles);
+}
+
+// Inline GPIO operations
+static inline void SIM_HAL_WriteIO(uint8_t level) {
+    if (level) {
+        SIM_IO_GPIO_Port->BSRR = SIM_IO_Pin;      // Set HIGH
+    } else {
+        SIM_IO_GPIO_Port->BSRR = (uint32_t)SIM_IO_Pin << 16;  // Set LOW
+    }
+}
+
+static inline uint8_t SIM_HAL_ReadIO(void) {
+    return (SIM_IO_GPIO_Port->IDR & SIM_IO_Pin) ? 1 : 0;
+}
+
+static inline void SIM_HAL_WriteRST(uint8_t level) {
+    HAL_GPIO_WritePin(SIM_RST_GPIO_Port, SIM_RST_Pin, level ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+// These can remain as regular functions (not timing-critical)
+extern void SIM_HAL_DelayMs(uint32_t ms);
+extern void SIM_HAL_DebugPrint(const char *str);
 
 /* USER CODE END Private defines */
 

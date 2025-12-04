@@ -1,0 +1,14 @@
+../Core/Inc/main.h:77:20:SIM_HAL_DelayUs	2
+../Core/Inc/main.h:84:20:SIM_HAL_WriteIO	2
+../Core/Inc/main.h:92:23:SIM_HAL_ReadIO	1
+../Core/Inc/main.h:96:20:SIM_HAL_WriteRST	1
+../Core/Src/sim_card.c:40:9:SIM_Init	1
+../Core/Src/sim_card.c:51:6:SIM_Reset	1
+../Core/Src/sim_card.c:58:6:SIM_SendByte	2
+../Core/Src/sim_card.c:85:9:SIM_ReceiveByte	7
+../Core/Src/sim_card.c:117:6:SIM_ReceiveBytes	2
+../Core/Src/sim_card.c:124:9:SIM_ReadATR	6
+../Core/Src/sim_card.c:154:9:SIM_SendAPDU	18
+../Core/Src/sim_card.c:274:16:SIM_GetResponse	3
+../Core/Src/sim_card.c:307:9:SIM_ReadIMSI	15
+../Core/Src/sim_card.c:362:9:SIM_ReadICCID	10
