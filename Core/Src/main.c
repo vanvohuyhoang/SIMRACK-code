@@ -129,7 +129,30 @@ int main(void)
     sprintf(msg, "ICCID: %s\r\n", iccid);
     HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
     
-    HAL_Delay(5000);
+    // ========== GSM Authentication (2G - works on all SIM cards) ==========
+    
+    // Example RAND (in real use, comes from modem/client)
+    uint8_t rand[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+                        0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
+    
+    // Response buffer and hex string for client
+    uint8_t auth_response[64];
+    uint8_t auth_resp_len = 0;
+    char hex_response[130];  // Max 64 bytes * 2 + null
+    
+    // GSM Authentication (works on GSM SIM and USIM)
+    SIM_SelectDFGSM();
+    if (SIM_Authenticate(rand, NULL, auth_response, &auth_resp_len)) {
+        // Convert to hex string for client forwarding
+        SIM_ResponseToHex(auth_response, auth_resp_len, hex_response);
+        sprintf(msg, "AUTH Response: %s\r\n", hex_response);
+        HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    } else {
+        sprintf(msg, "AUTH FAILED\r\n");
+        HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    }
+    
+    HAL_Delay(60000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

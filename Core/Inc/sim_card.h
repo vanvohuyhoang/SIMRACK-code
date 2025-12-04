@@ -99,6 +99,79 @@ uint8_t SIM_SendAPDU(uint8_t *cmd, uint8_t cmd_len, uint8_t *response, uint8_t *
 void SIM_Reset(void);
 
 /* ============================================================================
+ * Authentication Forwarding (SIM Proxy)
+ * For STM32 sitting between MODEM <-> SIM
+ * ============================================================================ */
+
+/**
+ * @brief  GSM Authentication (RUN GSM ALGORITHM - 2G)
+ *         Forwards RAND to SIM, returns SRES + Kc
+ * 
+ * @param  rand: 16-byte random challenge from modem
+ * @param  sres: Output buffer for 4-byte Signed Response
+ * @param  kc:   Output buffer for 8-byte Ciphering Key
+ * @retval 1 = success, 0 = failure
+ * 
+ * Flow: MODEM sends RAND -> STM32 -> SIM -> SRES+Kc -> STM32 -> MODEM
+ * APDU: A0 88 00 00 10 <RAND[16]>
+ * Response: SRES[4] + Kc[8] + 9000
+ */
+uint8_t SIM_RunGSMAlgorithm(const uint8_t *rand, uint8_t *sres, uint8_t *kc);
+
+/**
+ * @brief  UMTS/3G Authentication (AUTHENTICATE - 3G/4G AKA)
+ *         Forwards RAND+AUTN to USIM, returns full response for client
+ * 
+ * @param  rand: 16-byte random challenge from modem
+ * @param  autn: 16-byte authentication token from modem
+ * @param  response: Output buffer for full response (min 64 bytes)
+ * @param  resp_len: Output - actual response length
+ * @retval 1 = success, 0 = failure
+ * 
+ * APDU: 00 88 00 81 22 <RAND[16]> <AUTN[16]>
+ * Success Response: DB <len> <RES> <CK[16]> <IK[16]> 9000
+ * Sync Failure: DC <len> <AUTS[14]> 9000
+ */
+uint8_t SIM_Authenticate3G(const uint8_t *rand, const uint8_t *autn, 
+                           uint8_t *response, uint8_t *resp_len);
+
+/**
+ * @brief  Generic Authentication - auto-detect 2G/3G
+ *         Returns raw response bytes for direct forwarding to client
+ * 
+ * @param  rand: 16-byte RAND
+ * @param  autn: 16-byte AUTN (NULL for 2G GSM auth)
+ * @param  response: Output buffer for raw response (min 64 bytes)
+ * @param  resp_len: Output - response length including SW
+ * @retval 1 = success, 0 = failure
+ */
+uint8_t SIM_Authenticate(const uint8_t *rand, const uint8_t *autn,
+                         uint8_t *response, uint8_t *resp_len);
+
+/**
+ * @brief  Select GSM directory (DF_GSM = 7F20)
+ *         Must be called before authentication
+ * @retval 1 = success, 0 = failure
+ */
+uint8_t SIM_SelectDFGSM(void);
+
+/**
+ * @brief  Select USIM ADF for 3G authentication
+ * @retval 1 = success, 0 = failure  
+ */
+uint8_t SIM_SelectADFUSIM(void);
+
+/**
+ * @brief  Convert binary response to hex string for client transmission
+ * @param  data: Binary data
+ * @param  len: Data length
+ * @param  hex_str: Output hex string (must be at least len*2+1 bytes)
+ * 
+ * Example: {0xFE, 0xF0, 0x90, 0x00} -> "FEF09000"
+ */
+void SIM_ResponseToHex(const uint8_t *data, uint8_t len, char *hex_str);
+
+/* ============================================================================
  * Low-level functions (for advanced use)
  * ============================================================================ */
 

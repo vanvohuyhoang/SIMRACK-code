@@ -12,3 +12,9 @@
 ../Core/Src/sim_card.c:274:16:SIM_GetResponse	96	static
 ../Core/Src/sim_card.c:307:9:SIM_ReadIMSI	128	static
 ../Core/Src/sim_card.c:362:9:SIM_ReadICCID	88	static
+../Core/Src/sim_card.c:408:9:SIM_SelectDFGSM	56	static
+../Core/Src/sim_card.c:434:9:SIM_RunGSMAlgorithm	200	static
+../Core/Src/sim_card.c:541:9:SIM_SelectADFUSIM	64	static
+../Core/Src/sim_card.c:574:9:SIM_Authenticate3G	128	static
+../Core/Src/sim_card.c:687:9:SIM_Authenticate	128	static
+../Core/Src/sim_card.c:713:6:SIM_ResponseToHex	32	static
